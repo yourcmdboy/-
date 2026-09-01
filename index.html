@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
+  <meta name="theme-color" content="#111a18" />
+  <meta name="description" content="Сезон Охоты: Майнкампф — пиксельный тайминг-кликер про охоту, лут и торговлю." />
+  <title>Сезон Охоты : Майнкампф</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%232b3d2f'/%3E%3Cpath d='M5 23h22v5H5z' fill='%2378a958'/%3E%3Cpath d='M8 19h5v4H8zm12-8h5v12h-5z' fill='%23d3a45f'/%3E%3Cpath d='M10 14h11v7H10z' fill='%23b5c4b5'/%3E%3C/svg%3E" />
+  <link rel="preload" href="minecraft.ttf" as="font" type="font/ttf" crossorigin />
+  <link rel="preload" href="assets/loading-bg.webp" as="image" />
+  <!-- Полностью автономная сборка: все стили, пиктограммы и ассеты локальные. -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body data-mobile-page="hunt">
+  <noscript><div class="noscript">Для игры нужен JavaScript. Включи его и перезагрузи страницу.</div></noscript>
+
+  <div id="loader" class="loader" aria-live="polite">
+    <div class="loader__art" aria-hidden="true"></div>
+    <div class="loader__scan" aria-hidden="true"></div>
+    <div class="loader__content">
+      <div class="loader__eyebrow">WILDLIFE DIVISION // CYCLE 01</div>
+      <div class="loader__logo"><span>СЕЗОН ОХОТЫ</span><b>МАЙНКАМПФ</b></div>
+      <p class="loader__status" id="loaderStatus">Рассыпаем блоки по чанкам…</p>
+      <div class="loader__bar"><i id="loaderProgress"></i></div>
+      <div class="loader__tips"><kbd>SPACE</kbd> поймать <span></span> <kbd>E</kbd> начать вылазку</div>
+    </div>
+  </div>
+
+  <div id="game" class="game-shell" aria-hidden="true">
+    <header class="topbar pixel-edge">
+      <button class="brand" id="brandButton" aria-label="Открыть справку">
+        <span class="brand__mark">M</span>
+        <span class="brand__copy"><b>СЕЗОН ОХОТЫ</b><small>МАЙНКАМПФ // WILDLIFE DIVISION</small></span>
+      </button>
+
+      <div class="rankbar" aria-label="Прогресс уровня">
+        <div class="rankbar__copy"><span id="rankName">Следопыт I</span><b id="rankLevel">УР. 1</b></div>
+        <div class="rankbar__track"><i id="rankProgress"></i></div>
+      </div>
+
+      <div class="resources">
+        <div class="resource soul-resource" title="Души перерождения"><span class="ico soul-ico">✦</span><b id="soulsValue">0</b><small>ДУШ</small></div>
+        <div class="resource" title="Монеты"><span class="ico coin-ico">◆</span><b id="coinsValue">320</b><small>₽</small></div>
+        <button class="resource inventory-resource" id="inventoryShortcut" title="Открыть рюкзак"><span class="ico">▦</span><b id="inventoryValue">1/12</b></button>
+        <button class="icon-button" id="soundButton" aria-label="Звук"><span id="soundIcon">♪</span></button>
+        <button class="icon-button" id="settingsButton" aria-label="Настройки">⚙</button>
+      </div>
+    </header>
+
+    <main class="game-grid">
+      <aside class="panel location-panel pixel-edge" data-page="locations" aria-label="Локации">
+        <div class="panel-heading">
+          <div><small>КАРТА РАЙОНА</small><h2>ТОЧКИ ЛОВЛИ</h2></div>
+          <span class="online-dot" title="Локальное сохранение"></span>
+        </div>
+        <div id="locationList" class="location-list"></div>
+        <div class="map-note">
+          <span>⌖</span>
+          <p><b>След меняется каждый заход.</b><br />Локация влияет на скорость, цену и редкость.</p>
+        </div>
+      </aside>
+
+      <section class="arena-panel pixel-edge" data-page="hunt" aria-label="Охота">
+        <div class="arena-head">
+          <div>
+            <div class="eyebrow" id="locationEyebrow">СЕКТОР 01 · БЕЗОПАСНО</div>
+            <h1 id="locationTitle">Дикие окраины</h1>
+          </div>
+          <div class="weather" id="weatherChip"><span>☀</span><div><small>УСЛОВИЕ</small><b>Тихое утро</b></div></div>
+        </div>
+
+        <div class="scene location-yard" id="scene">
+          <div class="scene__sky"><i></i><i></i><i></i></div>
+          <div class="scene__hills"></div>
+          <div class="scene__trees"></div>
+          <div class="scene__ground"></div>
+          <div class="spark-field" id="sparkField" aria-hidden="true"></div>
+
+          <div class="run-badge" id="runBadge"><span class="pulse"></span><b>ВЫЛАЗКА НЕ НАЧАТА</b></div>
+          <div class="effect-chip is-hidden" id="effectChip"></div>
+          <div class="penalty-overlay is-hidden" id="penaltyOverlay"><span>⚠</span><div><small>ШУМ НА ТРОПЕ</small><b>Новый след через <i id="penaltyCountdown">5.0 сек.</i></b></div></div>
+
+          <div class="animal-stage is-idle" id="animalStage">
+            <div class="animal-aura"></div>
+            <img id="animalSprite" src="assets/animals/rabbit.gif" alt="Заяц" />
+            <div class="animal-shadow"></div>
+            <div class="rarity-beam"></div>
+          </div>
+
+          <div class="encounter-card" id="encounterCard">
+            <div><small id="animalRarity">РАЗВЕДКА</small><b id="animalName">Следов не видно</b></div>
+            <span id="animalDifficulty">Нажми «Начать»</span>
+            <div class="escape-clock is-hidden" id="escapeClock"><small>ПОБЕГ</small><span><i id="escapeBar"></i></span></div>
+          </div>
+
+          <div class="combo-display" id="comboDisplay"><small>СЕРИЯ</small><b>×<span id="comboValue">0</span></b></div>
+        </div>
+
+        <div class="hunt-console">
+          <div class="console-meta">
+            <div><small>ОРУЖИЕ</small><b id="equippedWeaponName">Ржавый силок</b></div>
+            <div><small>ПРИМАНКА</small><b id="equippedBaitName">Морковь ×3</b></div>
+            <div class="run-stat"><small>УЛОВ ВЫЛАЗКИ</small><b><span id="runCatchCount">0</span> шт.</b></div>
+          </div>
+
+          <div class="timing-wrap" id="timingWrap">
+            <div class="timing-labels"><span>РАНО</span><b id="timingPrompt">ГОТОВ К ВЫЛАЗКЕ</b><span>ПОЗДНО</span></div>
+            <div class="timing-track" id="timingTrack" role="meter" aria-label="Шкала тайминга" aria-valuemin="0" aria-valuemax="100">
+              <div class="timing-danger"></div>
+              <div class="timing-good" id="goodZone"><i></i></div>
+              <div class="timing-perfect" id="perfectZone"></div>
+              <div class="timing-marker" id="timingMarker"><span></span></div>
+              <img class="glitch-drop is-hidden" id="glitchDrop" src="assets/мусор-дроп.gif" alt="" aria-hidden="true" />
+              <div class="timing-grid"></div>
+            </div>
+          </div>
+
+          <div class="hunt-actions">
+            <button class="pixel-button button-secondary" id="baitCycleButton"><span>🥕</span><b>СМЕНИТЬ ПРИМАНКУ</b><small>Q</small></button>
+            <button class="pixel-button button-primary" id="huntButton"><span class="button-icon">⌖</span><b id="huntButtonText">НАЧАТЬ ВЫЛАЗКУ</b><small id="huntHotkey">E</small></button>
+            <button class="pixel-button button-secondary" id="fleeButton" disabled><span>↩</span><b>ВЕРНУТЬСЯ</b><small>ESC</small></button>
+          </div>
+          <p class="console-hint" id="consoleHint">Попадай в зелёную зону и не тяни: зверь убежит. Оружие занимает место рядом с трофеями.</p>
+        </div>
+      </section>
+
+      <aside class="panel side-panel pixel-edge" data-page="bag" aria-label="Инвентарь и магазин">
+        <div class="side-tabs" role="tablist">
+          <button class="side-tab is-active" data-tab="inventory" role="tab"><span>▦</span><b>РЮКЗАК</b></button>
+          <button class="side-tab" data-tab="weapons" role="tab"><span>⚔</span><b>АРСЕНАЛ</b></button>
+          <button class="side-tab" data-tab="baits" role="tab"><span>◈</span><b>ПРИМАНКИ</b></button>
+          <button class="side-tab" data-tab="trade" role="tab"><span>⇄</span><b>ТОРГ</b></button>
+        </div>
+
+        <div class="tab-pane is-active" id="tab-inventory" role="tabpanel">
+          <div class="pane-heading">
+            <div><small>СОДЕРЖИМОЕ</small><h2>ПОЛЕВОЙ РЮКЗАК</h2></div>
+            <button class="mini-button" id="sellAllButton">СДАТЬ ВСЁ</button>
+          </div>
+          <div class="capacity-row"><span>Занято · <em id="weaponSlotText">⚔ 1 оруж.</em></span><b id="capacityText">1 / 12</b></div>
+          <div class="capacity-track"><i id="capacityBar"></i></div>
+          <div class="inventory-grid" id="inventoryGrid"></div>
+          <button class="upgrade-card" id="capacityUpgradeButton">
+            <span class="upgrade-card__icon">＋</span>
+            <span><small>УЛУЧШЕНИЕ</small><b id="capacityUpgradeTitle">Расширить до 18</b><em id="capacityUpgradeBenefit">+6 ячеек</em></span>
+            <strong id="capacityUpgradePrice">900 ₽</strong>
+          </button>
+        </div>
+
+        <div class="tab-pane" id="tab-weapons" role="tabpanel">
+          <div class="pane-heading"><div><small>16 МОДЕЛЕЙ · КАЖДАЯ = 1 СЛОТ</small><h2>ОРУЖЕЙНЫЙ ЯЩИК</h2></div><span class="pane-badge">ТАЙМИНГ</span></div>
+          <div class="shop-list" id="weaponsList"></div>
+        </div>
+
+        <div class="tab-pane" id="tab-baits" role="tabpanel">
+          <div class="pane-heading"><div><small>12 РЕЦЕПТОВ</small><h2>СТОЛ ПРИМАНОК</h2></div><span class="pane-badge">БАФФ + ДЕБАФФ</span></div>
+          <div class="shop-list" id="baitsList"></div>
+        </div>
+
+        <div class="tab-pane" id="tab-trade" role="tabpanel">
+          <div class="merchant-card">
+            <div class="merchant-avatar">М</div>
+            <div><small>СКУПЩИК МИХАЛЫЧ</small><b id="marketMood">Сегодня щедрый</b><p>Курс рынка: <strong id="marketRate">×1.08</strong></p></div>
+          </div>
+          <div class="pane-heading compact"><div><small>ОСОБЫЙ ЗАКАЗ</small><h2>ДОРОЖЕ НА 60%</h2></div><span id="marketTimer">до 00:00</span></div>
+          <div class="order-list" id="orderList"></div>
+          <div class="trade-summary">
+            <span>Стоимость рюкзака</span><b id="inventoryWorth">0 ₽</b>
+            <button class="pixel-button button-primary small" id="tradeSellAllButton"><b>ПРОДАТЬ ВСЁ</b></button>
+          </div>
+          <div class="stats-grid" id="statsGrid"></div>
+          <section class="rebirth-card" id="rebirthCard"><div class="rebirth-orbit"><i></i><b>∞</b></div><div class="rebirth-copy"><small id="rebirthProgress">1 / 14 СЕКТОРОВ</small><h3>ПЕРЕРОЖДЕНИЕ</h3><p id="rebirthBonus">Открой все локации, чтобы начать новый усиленный цикл.</p></div><div class="rebirth-action"><strong id="rebirthReward">+1 душа</strong><button id="rebirthButton" disabled>НОВЫЙ ЦИКЛ</button></div></section>
+        </div>
+      </aside>
+    </main>
+
+    <nav class="mobile-nav pixel-edge" aria-label="Мобильная навигация">
+      <button data-mobile="locations"><span>⌖</span><b>КАРТА</b></button>
+      <button data-mobile="hunt" class="is-active"><span>◎</span><b>ЛОВЛЯ</b></button>
+      <button data-mobile="bag"><span>▦</span><b>РЮКЗАК</b><i id="mobileBagCount">1</i></button>
+    </nav>
+  </div>
+
+  <div class="modal-backdrop is-hidden" id="modalBackdrop">
+    <section class="game-modal pixel-edge" id="gameModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button class="modal-close" id="modalClose" aria-label="Закрыть">×</button>
+      <div id="modalContent"></div>
+    </section>
+  </div>
+
+  <div class="tooltip" id="itemTooltip" role="tooltip"></div>
+  <div class="toast-stack" id="toastStack" aria-live="polite"></div>
+  <div class="flash" id="flash" aria-hidden="true"></div>
+
+  <script src="game.js"></script>
+</body>
+</html>
