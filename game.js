@@ -175,7 +175,7 @@
     {name:'Сломанный компас',icon:'↯',type:'debuff',text:'Редкость −12%',mod:{luck:-.12}},
     {name:'Голодный ворон',icon:'◆',type:'debuff',text:'Стоимость −18%',mod:{value:-.18}},
     {name:'Липкая грязь',icon:'≈',type:'debuff',text:'Perfect −35%',mod:{perfect:-.35}},
-    {name:'Шум вагонетки',icon:'���',type:'debuff',text:'Зона −8%, скорость +8%',mod:{zone:-.08,speed:.08}}
+    {name:'Шум вагонетки',icon:'   ',type:'debuff',text:'Зона −8%, скорость +8%',mod:{zone:-.08,speed:.08}}
   ];
 
   const CAPACITY_LEVELS = [12,18,26,36,48,64,84,108];
@@ -469,7 +469,7 @@
   function tooltipHtml(item){
     if(!item)return '';
     const a=animalById[item.animalId],r=RARITIES[item.rarity];
-    return `<small style="color:${r.color}">${r.name} · ${item.weight} КГ</small><b>${a.name}</b><p>${a.desc}</p><div class="tip-trait">▲ ${a.buff}</div><div class="tip-trait bad">▼ ${a.debuff}</div><p style="margin-top:9px">��ут: ${item.loot.join(' + ')} · ${fmt(itemValue(item))} ₽</p>`;
+    return `<small style="color:${r.color}">${r.name} · ${item.weight} КГ</small><b>${a.name}</b><p>${a.desc}</p><div class="tip-trait">▲ ${a.buff}</div><div class="tip-trait bad">▼ ${a.debuff}</div><p style="margin-top:9px">  ут: ${item.loot.join(' + ')} · ${fmt(itemValue(item))} ₽</p>`;
   }
   function showTooltip(item,e){if(window.innerWidth<=1040)return;const t=$('#itemTooltip');t.innerHTML=tooltipHtml(item);t.classList.add('is-visible');positionTooltip(e)}
   function positionTooltip(e){const t=$('#itemTooltip');if(!t.classList.contains('is-visible'))return;const x=clamp(e.clientX+16,12,window.innerWidth-292),y=clamp(e.clientY+14,12,window.innerHeight-t.offsetHeight-12);t.style.left=`${x}px`;t.style.top=`${y}px`}
@@ -528,7 +528,7 @@
   }
   function sellOne(uid){
     if(run.active){toast('Не на ходу','Продажа доступна после возвращения.',true);return}const ix=state.inventory.findIndex(i=>i.uid===uid);if(ix<0)return;
-    const item=state.inventory[ix],a=animalById[item.animalId],price=itemValue(item);state.inventory.splice(ix,1);state.coins+=price;state.totalSold+=price;save();playSfx('buy',.62);renderAll();toast('��рофей продан',`${a.name} · +${fmt(price)} ₽`);
+    const item=state.inventory[ix],a=animalById[item.animalId],price=itemValue(item);state.inventory.splice(ix,1);state.coins+=price;state.totalSold+=price;save();playSfx('buy',.62);renderAll();toast('  рофей продан',`${a.name} · +${fmt(price)} ₽`);
   }
   function sellAll(){
     if(run.active){toast('Не на ходу','Продажа доступна после возвращения.',true);return}if(!state.inventory.length){toast('Рюкзак пуст','Продавать пока нечего.',true);return}
@@ -627,7 +627,7 @@
 
   function showVoidGlitch(){
     const img=$('#glitchDrop');img.className='glitch-drop is-hidden';if(state.location!=='void')return;
-    const token=Date.now();run.glitchToken=token;img.style.width=`${rand(22,30)}%`;img.classList.toggle('is-reverse',Math.random()<.5);
+    const token=Date.now();run.glitchToken=token;img.style.width=`${rand(45,50)}%`;img.classList.toggle('is-reverse',Math.random()<.5);
     img.onload=()=>{if(run.active&&!run.waiting&&run.glitchToken===token)img.classList.remove('is-hidden')};
     img.onerror=()=>{img.classList.add('is-hidden');if(!showVoidGlitch.warned){showVoidGlitch.warned=true;toast('Нет мусор-дроп.gif','Положи свой файл рядом с index.html — игра подключит его автоматически.',true)}};
     img.src=`мусор-дроп.gif?${token}`;run.glitchTimer=setTimeout(()=>{img.classList.add('is-hidden');run.glitchToken=0},5000);
